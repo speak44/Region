@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			ul,li{
+				margin: 0;
+				padding: 0;
+				list-style: none;
+			}
+			#list{
+				width: 424px;
+				height: 325px;
+				margin: 100px auto;
+				/*border: 1px solid #000;*/
+			}
+			li{
+				float: left;
+				width: 100px;
+				height: 100px;
+				background: red;
+				margin: 3px;
+			}
+			#box{
+				position: absolute;
+				border: 1px dashed #000000;
+				/*width: 100px;
+				height: 100px;*/
+				display: none;
+				background: skyblue;
+				opacity: .4;
+			}
+		</style>
+	</head>
+	<body>
+		<ul id="list">
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+		</ul>
+		<div id="box"></div>
+		<script type="text/javascript">
+			var box=document.getElementById('box');
+			var list=document.getElementById('list');
+			var lis=list.getElementsByTagName('li');
+			var arr=[];
+			document.onmousedown=function(ev){
+				ev.preventDefault()
+				//存在问题，需要清除默认样式
+				var nx=ev.clientX;
+				var ny=ev.clientY;
+				box.style.display='block';
+				document.onmousemove=function(ev){
+					var dx=ev.clientX;
+					var dy=ev.clientY;
+					w=Math.abs(nx-dx);
+					h=Math.abs(ny-dy);
+					l=nx>dx?dx:nx
+					t=ny>dy?dy:ny
+					box.style.width=w+'px';
+					box.style.height=h+'px';
+					box.style.left=l+'px';
+					box.style.top=t+'px';
+					for (var i=0;i<arr.length;i++) {
+						arr[i].style.background='';
+					}
+					arr=[];
+					for (var i=0;i<lis.length;i++) {
+						if (kuan(box,lis[i])) {//如果框选中了就放在arr数组中
+							lis[i].style.background='yellow';
+							arr.push(lis[i])
+							//console.log(arr)
+						}
+					}
+				}
+				document.onmouseup=function(){
+					//box.style.display='none';
+					box.style.cssText='';
+					document.onmousemove=null;
+					document.onmouseup=null;
+				}
+			}
+			function kuan(obj1,obj2){
+				var pos1=obj1.getBoundingClientRect();
+				var pos2=obj2.getBoundingClientRect();
+				if (pos1.right<pos2.left||pos1.bottom<pos2.top||pos1.left>pos2.right||pos1.top>pos2.bottom) {
+					return false
+				}else{
+					return true;
+				}
+			}
+			//布局转化
+			for (var i=0;i<lis.length;i++) {
+				lis[i].style.left=lis[i].offsetLeft+'px';
+				lis[i].style.top=lis[i].offsetTop+'px';
+				//存在错误，忘记添加px；
+				setTimeout(function(i){
+					lis[i].style.position='absolute';
+				},0,i)
+			}
+			for (var i=0;i<lis.length;i++) {
+				lis[i].onmousedown=function(ev){
+					//ev.preventDefault(),存在错误 应该在li的鼠标按下事件中。组织后续冒泡事件，防止触发 box 选中框的事件
+					ev.cancelBubble=true;
+					if (arr.includes(this)) {
+						//console.log(arr)
+						var nl=ev.clientX;
+						var nt=ev.clientY;
+						for (var i=0;i<arr.length;i++) {
+							var pos=arr[i].getBoundingClientRect()
+							arr[i].disx=nl-pos.left;
+							arr[i].disy=nt-pos.top;
+							//console.log(arr[i].disx)
+						}
+						document.onmousemove=function(ev){
+							var dL=ev.clientX;
+							console.log(dL)
+							var dT=ev.clientY;
+							for (var i=0;i<arr.length;i++) {
+								var l=dL-arr[i].disx;
+								var t=dT-arr[i].disy;
+								//console.log(l)
+								arr[i].style.left=l+'px';
+								arr[i].style.top=t+'px';
+								//console.log(arr[i].style.left)
+							}
+						}
+						document.onmouseup=function(){
+							document.onmousemove=null;
+							document.onmouseup=null;
+						}
+					}
+					
+				}
+			}
+		</script>
+	</body>
+</html>
